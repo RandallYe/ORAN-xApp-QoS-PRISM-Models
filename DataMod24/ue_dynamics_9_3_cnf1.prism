@@ -29,24 +29,24 @@ const double power_consumption_rc_off = 0.01;
 //  Initial configuration: UEs
 // -------------------------------------------------------------------
 const int N_UEs = 9;
-const double ue1_on_rate = 0.01;
-const double ue1_off_rate = 0.1;
-const double ue2_on_rate = 0.01;
-const double ue2_off_rate = 0.1;
-const double ue3_on_rate = 0.01;
-const double ue3_off_rate = 0.1;
-const double ue4_on_rate = 0.01;
-const double ue4_off_rate = 0.1;
-const double ue5_on_rate = 0.01;
-const double ue5_off_rate = 0.1;
-const double ue6_on_rate = 0.01;
-const double ue6_off_rate = 0.1;
-const double ue7_on_rate = 0.01;
-const double ue7_off_rate = 0.1;
-const double ue8_on_rate = 0.01;
-const double ue8_off_rate = 0.1;
-const double ue9_on_rate = 0.01;
-const double ue9_off_rate = 0.1;
+const double ue1_off_rate = 0.01;
+const double ue1_on_rate = 0.1;
+const double ue2_off_rate = 0.01;
+const double ue2_on_rate = 0.1;
+const double ue3_off_rate = 0.01;
+const double ue3_on_rate = 0.1;
+const double ue4_off_rate = 0.01;
+const double ue4_on_rate = 0.1;
+const double ue5_off_rate = 0.01;
+const double ue5_on_rate = 0.1;
+const double ue6_off_rate = 0.01;
+const double ue6_on_rate = 0.1;
+const double ue7_off_rate = 0.01;
+const double ue7_on_rate = 0.1;
+const double ue8_off_rate = 0.01;
+const double ue8_on_rate = 0.1;
+const double ue9_off_rate = 0.01;
+const double ue9_on_rate = 0.1;
 
 // -------------------------------------------------------------------
 //  Initial configuration: relative locations of UEs to RCs
@@ -96,9 +96,9 @@ module ue1
   ue1_rc : [0..N_RCs] init 0;
 
   // On -> Off
-  [] ue1_on -> ue1_on_rate: (ue1_on' = false);
+  [] ue1_on -> ue1_off_rate: (ue1_on' = false);
   // Off -> On
-  [] (!ue1_on) -> ue1_off_rate: (ue1_on' = true);
+  [] (!ue1_on) -> ue1_on_rate: (ue1_on' = true);
 
   // Connect to one RC if the RC is on and has available capacity
   [ue1_to_rc1] (ue1_on) & (ue1_rc = 0) & ue1_within_rc1 & rc1_on & (rc1_serving < rc1_capacity) -> default_rate: (ue1_rc' = rc1_id);
@@ -136,8 +136,8 @@ endmodule
 module ue2 = ue1 [
   ue1_on         = ue2_on,
   ue1_rc         = ue2_rc,
-  ue1_off_rate   = ue2_off_rate,
-  ue1_on_rate    = ue2_on_rate,
+  ue1_on_rate   = ue2_on_rate,
+  ue1_off_rate    = ue2_off_rate,
   ue1_to_rc1     = ue2_to_rc1,
   ue1_to_rc2     = ue2_to_rc2,
   ue1_to_rc3     = ue2_to_rc3,
@@ -155,8 +155,8 @@ module ue2 = ue1 [
 module ue3 = ue1 [
   ue1_on         = ue3_on,
   ue1_rc         = ue3_rc,
-  ue1_off_rate   = ue3_off_rate,
-  ue1_on_rate    = ue3_on_rate,
+  ue1_on_rate   = ue3_on_rate,
+  ue1_off_rate    = ue3_off_rate,
   ue1_to_rc1     = ue3_to_rc1,
   ue1_to_rc2     = ue3_to_rc2,
   ue1_to_rc3     = ue3_to_rc3,
@@ -174,8 +174,8 @@ module ue3 = ue1 [
 module ue4 = ue1 [
   ue1_on         = ue4_on,
   ue1_rc         = ue4_rc,
-  ue1_off_rate   = ue4_off_rate,
-  ue1_on_rate    = ue4_on_rate,
+  ue1_on_rate   = ue4_on_rate,
+  ue1_off_rate    = ue4_off_rate,
   ue1_to_rc1     = ue4_to_rc1,
   ue1_to_rc2     = ue4_to_rc2,
   ue1_to_rc3     = ue4_to_rc3,
@@ -193,8 +193,8 @@ module ue4 = ue1 [
 module ue5 = ue1 [
   ue1_on         = ue5_on,
   ue1_rc         = ue5_rc,
-  ue1_off_rate   = ue5_off_rate,
-  ue1_on_rate    = ue5_on_rate,
+  ue1_on_rate   = ue5_on_rate,
+  ue1_off_rate    = ue5_off_rate,
   ue1_to_rc1     = ue5_to_rc1,
   ue1_to_rc2     = ue5_to_rc2,
   ue1_to_rc3     = ue5_to_rc3,
@@ -212,8 +212,8 @@ module ue5 = ue1 [
 module ue6 = ue1 [
   ue1_on         = ue6_on,
   ue1_rc         = ue6_rc,
-  ue1_off_rate   = ue6_off_rate,
-  ue1_on_rate    = ue6_on_rate,
+  ue1_on_rate   = ue6_on_rate,
+  ue1_off_rate    = ue6_off_rate,
   ue1_to_rc1     = ue6_to_rc1,
   ue1_to_rc2     = ue6_to_rc2,
   ue1_to_rc3     = ue6_to_rc3,
@@ -231,8 +231,8 @@ module ue6 = ue1 [
 module ue7 = ue1 [
   ue1_on         = ue7_on,
   ue1_rc         = ue7_rc,
-  ue1_off_rate   = ue7_off_rate,
-  ue1_on_rate    = ue7_on_rate,
+  ue1_on_rate   = ue7_on_rate,
+  ue1_off_rate    = ue7_off_rate,
   ue1_to_rc1     = ue7_to_rc1,
   ue1_to_rc2     = ue7_to_rc2,
   ue1_to_rc3     = ue7_to_rc3,
@@ -250,8 +250,8 @@ module ue7 = ue1 [
 module ue8 = ue1 [
   ue1_on         = ue8_on,
   ue1_rc         = ue8_rc,
-  ue1_off_rate   = ue8_off_rate,
-  ue1_on_rate    = ue8_on_rate,
+  ue1_on_rate   = ue8_on_rate,
+  ue1_off_rate    = ue8_off_rate,
   ue1_to_rc1     = ue8_to_rc1,
   ue1_to_rc2     = ue8_to_rc2,
   ue1_to_rc3     = ue8_to_rc3,
@@ -269,8 +269,8 @@ module ue8 = ue1 [
 module ue9 = ue1 [
   ue1_on         = ue9_on,
   ue1_rc         = ue9_rc,
-  ue1_off_rate   = ue9_off_rate,
-  ue1_on_rate    = ue9_on_rate,
+  ue1_on_rate   = ue9_on_rate,
+  ue1_off_rate    = ue9_off_rate,
   ue1_to_rc1     = ue9_to_rc1,
   ue1_to_rc2     = ue9_to_rc2,
   ue1_to_rc3     = ue9_to_rc3,
