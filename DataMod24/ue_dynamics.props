@@ -1,0 +1,31 @@
+const int t;
+
+!E [ F "deadlock" ]
+
+R{"standby"}=? [ S ]
+
+R{"operating"}=? [ S ]
+
+S=? [rc1_on];
+
+S=? [rc2_on];
+
+S=? [rc3_on];
+
+filter(min, P=? [ F<=t ue1_rc>0 ], ue1_on&ue1_rc=0);
+
+filter(min, P=? [ F<=t ue2_rc>0 ], ue2_on&ue2_rc=0);
+
+filter(min, P=? [ F<=t ue3_rc>0 ], ue3_on&ue3_rc=0);
+
+filter(min, P=? [ F<=t ue4_rc>0 ], ue4_on&ue4_rc=0);
+
+filter(min, P=? [ F<=t ue5_rc>0 ], ue5_on&ue5_rc=0);
+
+filter(min, P=? [ F<=t ue6_rc>0 ], ue6_on&ue6_rc=0);
+
+filter(min, P=? [ F<=t ue7_rc>0 ], ue7_on&ue7_rc=0);
+
+filter(min, P=? [ F<=t ue8_rc>0 ], ue8_on&ue8_rc=0);
+
+filter(min, P=? [ F<=t ue9_rc>0 ], ue9_on&ue9_rc=0);

@@ -1,0 +1,405 @@
+// -----------------------------------------------------------------------------
+// Modeller: Roberto Metere 
+// Date: 21 Aug 2024
+//
+// Kangfeng Ye on 12th Sept 2024
+// -----------------------------------------------------------------------------
+
+ctmc
+
+const double default_rate = 1; 
+
+// -------------------------------------------------------------------
+//  Initial configuration: RCs
+// -------------------------------------------------------------------
+const int N_RCs = 3;
+const int rc1_id = 1;
+const int rc2_id = 2;
+const int rc3_id = 3;
+
+const int rc1_capacity = 5;
+const int rc2_capacity = 5;
+const int rc3_capacity = 5;
+
+// Per unit time
+const double power_consumption_rc_on = 1;
+const double power_consumption_rc_off = 0.01;
+
+// -------------------------------------------------------------------
+//  Initial configuration: UEs
+// -------------------------------------------------------------------
+const int N_UEs = 9;
+const double ue1_on_rate = 0.01;
+const double ue1_off_rate = 0.1;
+const double ue2_on_rate = 0.01;
+const double ue2_off_rate = 0.1;
+const double ue3_on_rate = 0.01;
+const double ue3_off_rate = 0.1;
+const double ue4_on_rate = 0.01;
+const double ue4_off_rate = 0.1;
+const double ue5_on_rate = 0.01;
+const double ue5_off_rate = 0.1;
+const double ue6_on_rate = 0.01;
+const double ue6_off_rate = 0.1;
+const double ue7_on_rate = 0.01;
+const double ue7_off_rate = 0.1;
+const double ue8_on_rate = 0.01;
+const double ue8_off_rate = 0.1;
+const double ue9_on_rate = 0.01;
+const double ue9_off_rate = 0.1;
+
+// -------------------------------------------------------------------
+//  Initial configuration: relative locations of UEs to RCs
+// -------------------------------------------------------------------
+// 
+const bool ue1_within_rc1 = true; 
+const bool ue1_within_rc2 = false; 
+const bool ue1_within_rc3 = true; 
+// 
+const bool ue2_within_rc1 = true; 
+const bool ue2_within_rc2 = true; 
+const bool ue2_within_rc3 = true; 
+// 
+const bool ue3_within_rc1 = true; 
+const bool ue3_within_rc2 = false; 
+const bool ue3_within_rc3 = true; 
+// 
+const bool ue4_within_rc1 = false; 
+const bool ue4_within_rc2 = false; 
+const bool ue4_within_rc3 = true; 
+// 
+const bool ue5_within_rc1 = false; 
+const bool ue5_within_rc2 = true; 
+const bool ue5_within_rc3 = true; 
+// 
+const bool ue6_within_rc1 = true; 
+const bool ue6_within_rc2 = true; 
+const bool ue6_within_rc3 = false; 
+// 
+const bool ue7_within_rc1 = false; 
+const bool ue7_within_rc2 = false; 
+const bool ue7_within_rc3 = true; 
+// 
+const bool ue8_within_rc1 = false; 
+const bool ue8_within_rc2 = true; 
+const bool ue8_within_rc3 = false; 
+// 
+const bool ue9_within_rc1 = true; 
+const bool ue9_within_rc2 = true; 
+const bool ue9_within_rc3 = false; 
+
+module ue1 
+  // On and off
+  ue1_on : bool init false;
+  // 0 - Disconnected
+  // others - connected RC id
+  ue1_rc : [0..N_RCs] init 0;
+
+  // On -> Off
+  [] ue1_on -> ue1_on_rate: (ue1_on' = false);
+  // Off -> On
+  [] (!ue1_on) -> ue1_off_rate: (ue1_on' = true);
+
+  // Connect to one RC if the RC is on and has available capacity
+  [ue1_to_rc1] (ue1_on) & (ue1_rc = 0) & ue1_within_rc1 & rc1_on & (rc1_serving < rc1_capacity) -> default_rate: (ue1_rc' = rc1_id);
+  [ue1_to_rc2] (ue1_on) & (ue1_rc = 0) & ue1_within_rc2 & rc2_on & (rc2_serving < rc2_capacity) -> default_rate: (ue1_rc' = rc2_id);
+  [ue1_to_rc3] (ue1_on) & (ue1_rc = 0) & ue1_within_rc3 & rc3_on & (rc3_serving < rc3_capacity) -> default_rate: (ue1_rc' = rc3_id);
+
+  // Connect if all RCs in the range are off or full capacity, choose one RC that is within the range and off
+  [ue1_on_rc1] (ue1_on) & (ue1_rc = 0) & 
+    !(ue1_within_rc1 & rc1_on & (rc1_serving < rc1_capacity)) &
+    !(ue1_within_rc2 & rc2_on & (rc2_serving < rc2_capacity)) & 
+    !(ue1_within_rc3 & rc3_on & (rc3_serving < rc3_capacity)) & 
+    (ue1_within_rc1 & !rc1_on)
+    -> default_rate: (ue1_rc' = rc1_id);
+
+  [ue1_on_rc2] (ue1_on) & (ue1_rc = 0) & 
+    !(ue1_within_rc1 & rc1_on & (rc1_serving < rc1_capacity)) &
+    !(ue1_within_rc2 & rc2_on & (rc2_serving < rc2_capacity)) & 
+    !(ue1_within_rc3 & rc3_on & (rc3_serving < rc3_capacity)) & 
+    (ue1_within_rc2 & !rc2_on)
+    -> default_rate: (ue1_rc' = rc2_id);
+
+  [ue1_on_rc3] (ue1_on) & (ue1_rc = 0) & 
+    !(ue1_within_rc1 & rc1_on & (rc1_serving < rc1_capacity)) &
+    !(ue1_within_rc2 & rc2_on & (rc2_serving < rc2_capacity)) & 
+    !(ue1_within_rc3 & rc3_on & (rc3_serving < rc3_capacity)) & 
+    (ue1_within_rc3 & !rc3_on)
+    -> default_rate: (ue1_rc' = rc3_id);
+
+  // Connected to unconnected 
+  [ue1_from_rc1] (!ue1_on) & (ue1_rc = rc1_id) -> default_rate: (ue1_rc' = 0);
+  [ue1_from_rc2] (!ue1_on) & (ue1_rc = rc2_id) -> default_rate: (ue1_rc' = 0);
+  [ue1_from_rc3] (!ue1_on) & (ue1_rc = rc3_id) -> default_rate: (ue1_rc' = 0);
+endmodule
+
+module ue2 = ue1 [
+  ue1_on         = ue2_on,
+  ue1_rc         = ue2_rc,
+  ue1_off_rate   = ue2_off_rate,
+  ue1_on_rate    = ue2_on_rate,
+  ue1_to_rc1     = ue2_to_rc1,
+  ue1_to_rc2     = ue2_to_rc2,
+  ue1_to_rc3     = ue2_to_rc3,
+  ue1_on_rc1     = ue2_on_rc1,
+  ue1_on_rc2     = ue2_on_rc2,
+  ue1_on_rc3     = ue2_on_rc3,
+  ue1_from_rc1   = ue2_from_rc1,
+  ue1_from_rc2   = ue2_from_rc2,
+  ue1_from_rc3   = ue2_from_rc3,
+  ue1_within_rc1 = ue2_within_rc1, 
+  ue1_within_rc2 = ue2_within_rc2,
+  ue1_within_rc3 = ue2_within_rc3
+] endmodule
+
+module ue3 = ue1 [
+  ue1_on         = ue3_on,
+  ue1_rc         = ue3_rc,
+  ue1_off_rate   = ue3_off_rate,
+  ue1_on_rate    = ue3_on_rate,
+  ue1_to_rc1     = ue3_to_rc1,
+  ue1_to_rc2     = ue3_to_rc2,
+  ue1_to_rc3     = ue3_to_rc3,
+  ue1_on_rc1     = ue3_on_rc1,
+  ue1_on_rc2     = ue3_on_rc2,
+  ue1_on_rc3     = ue3_on_rc3,
+  ue1_from_rc1   = ue3_from_rc1,
+  ue1_from_rc2   = ue3_from_rc2,
+  ue1_from_rc3   = ue3_from_rc3,
+  ue1_within_rc1 = ue3_within_rc1, 
+  ue1_within_rc2 = ue3_within_rc2,
+  ue1_within_rc3 = ue3_within_rc3
+] endmodule
+
+module ue4 = ue1 [
+  ue1_on         = ue4_on,
+  ue1_rc         = ue4_rc,
+  ue1_off_rate   = ue4_off_rate,
+  ue1_on_rate    = ue4_on_rate,
+  ue1_to_rc1     = ue4_to_rc1,
+  ue1_to_rc2     = ue4_to_rc2,
+  ue1_to_rc3     = ue4_to_rc3,
+  ue1_on_rc1     = ue4_on_rc1,
+  ue1_on_rc2     = ue4_on_rc2,
+  ue1_on_rc3     = ue4_on_rc3,
+  ue1_from_rc1   = ue4_from_rc1,
+  ue1_from_rc2   = ue4_from_rc2,
+  ue1_from_rc3   = ue4_from_rc3,
+  ue1_within_rc1 = ue4_within_rc1, 
+  ue1_within_rc2 = ue4_within_rc2,
+  ue1_within_rc3 = ue4_within_rc3
+] endmodule
+
+module ue5 = ue1 [
+  ue1_on         = ue5_on,
+  ue1_rc         = ue5_rc,
+  ue1_off_rate   = ue5_off_rate,
+  ue1_on_rate    = ue5_on_rate,
+  ue1_to_rc1     = ue5_to_rc1,
+  ue1_to_rc2     = ue5_to_rc2,
+  ue1_to_rc3     = ue5_to_rc3,
+  ue1_on_rc1     = ue5_on_rc1,
+  ue1_on_rc2     = ue5_on_rc2,
+  ue1_on_rc3     = ue5_on_rc3,
+  ue1_from_rc1   = ue5_from_rc1,
+  ue1_from_rc2   = ue5_from_rc2,
+  ue1_from_rc3   = ue5_from_rc3,
+  ue1_within_rc1 = ue5_within_rc1, 
+  ue1_within_rc2 = ue5_within_rc2,
+  ue1_within_rc3 = ue5_within_rc3
+] endmodule
+
+module ue6 = ue1 [
+  ue1_on         = ue6_on,
+  ue1_rc         = ue6_rc,
+  ue1_off_rate   = ue6_off_rate,
+  ue1_on_rate    = ue6_on_rate,
+  ue1_to_rc1     = ue6_to_rc1,
+  ue1_to_rc2     = ue6_to_rc2,
+  ue1_to_rc3     = ue6_to_rc3,
+  ue1_on_rc1     = ue6_on_rc1,
+  ue1_on_rc2     = ue6_on_rc2,
+  ue1_on_rc3     = ue6_on_rc3,
+  ue1_from_rc1   = ue6_from_rc1,
+  ue1_from_rc2   = ue6_from_rc2,
+  ue1_from_rc3   = ue6_from_rc3,
+  ue1_within_rc1 = ue6_within_rc1, 
+  ue1_within_rc2 = ue6_within_rc2,
+  ue1_within_rc3 = ue6_within_rc3
+] endmodule
+
+module ue7 = ue1 [
+  ue1_on         = ue7_on,
+  ue1_rc         = ue7_rc,
+  ue1_off_rate   = ue7_off_rate,
+  ue1_on_rate    = ue7_on_rate,
+  ue1_to_rc1     = ue7_to_rc1,
+  ue1_to_rc2     = ue7_to_rc2,
+  ue1_to_rc3     = ue7_to_rc3,
+  ue1_on_rc1     = ue7_on_rc1,
+  ue1_on_rc2     = ue7_on_rc2,
+  ue1_on_rc3     = ue7_on_rc3,
+  ue1_from_rc1   = ue7_from_rc1,
+  ue1_from_rc2   = ue7_from_rc2,
+  ue1_from_rc3   = ue7_from_rc3,
+  ue1_within_rc1 = ue7_within_rc1, 
+  ue1_within_rc2 = ue7_within_rc2,
+  ue1_within_rc3 = ue7_within_rc3
+] endmodule
+
+module ue8 = ue1 [
+  ue1_on         = ue8_on,
+  ue1_rc         = ue8_rc,
+  ue1_off_rate   = ue8_off_rate,
+  ue1_on_rate    = ue8_on_rate,
+  ue1_to_rc1     = ue8_to_rc1,
+  ue1_to_rc2     = ue8_to_rc2,
+  ue1_to_rc3     = ue8_to_rc3,
+  ue1_on_rc1     = ue8_on_rc1,
+  ue1_on_rc2     = ue8_on_rc2,
+  ue1_on_rc3     = ue8_on_rc3,
+  ue1_from_rc1   = ue8_from_rc1,
+  ue1_from_rc2   = ue8_from_rc2,
+  ue1_from_rc3   = ue8_from_rc3,
+  ue1_within_rc1 = ue8_within_rc1, 
+  ue1_within_rc2 = ue8_within_rc2,
+  ue1_within_rc3 = ue8_within_rc3
+] endmodule
+
+module ue9 = ue1 [
+  ue1_on         = ue9_on,
+  ue1_rc         = ue9_rc,
+  ue1_off_rate   = ue9_off_rate,
+  ue1_on_rate    = ue9_on_rate,
+  ue1_to_rc1     = ue9_to_rc1,
+  ue1_to_rc2     = ue9_to_rc2,
+  ue1_to_rc3     = ue9_to_rc3,
+  ue1_on_rc1     = ue9_on_rc1,
+  ue1_on_rc2     = ue9_on_rc2,
+  ue1_on_rc3     = ue9_on_rc3,
+  ue1_from_rc1   = ue9_from_rc1,
+  ue1_from_rc2   = ue9_from_rc2,
+  ue1_from_rc3   = ue9_from_rc3,
+  ue1_within_rc1 = ue9_within_rc1, 
+  ue1_within_rc2 = ue9_within_rc2,
+  ue1_within_rc3 = ue9_within_rc3
+] endmodule
+
+module rc1
+  // off - false, on - true 
+  rc1_on : bool init false;
+  rc1_serving: [0..rc1_capacity] init 0;
+
+  // rc1 serves no UEs, switch off
+  [rc1_off] (rc1_serving = 0) & rc1_on -> default_rate: (rc1_on' = false) & (rc1_serving' = 0);
+
+  // A new ue is linked to this rc1
+  [ue1_to_rc1] (rc1_serving < rc1_capacity) & rc1_on -> default_rate: (rc1_serving' = rc1_serving + 1);
+  [ue2_to_rc1] (rc1_serving < rc1_capacity) & rc1_on -> default_rate: (rc1_serving' = rc1_serving + 1);
+  [ue3_to_rc1] (rc1_serving < rc1_capacity) & rc1_on -> default_rate: (rc1_serving' = rc1_serving + 1);
+  [ue4_to_rc1] (rc1_serving < rc1_capacity) & rc1_on -> default_rate: (rc1_serving' = rc1_serving + 1);
+  [ue5_to_rc1] (rc1_serving < rc1_capacity) & rc1_on -> default_rate: (rc1_serving' = rc1_serving + 1);
+  [ue6_to_rc1] (rc1_serving < rc1_capacity) & rc1_on -> default_rate: (rc1_serving' = rc1_serving + 1);
+  [ue7_to_rc1] (rc1_serving < rc1_capacity) & rc1_on -> default_rate: (rc1_serving' = rc1_serving + 1);
+  [ue8_to_rc1] (rc1_serving < rc1_capacity) & rc1_on -> default_rate: (rc1_serving' = rc1_serving + 1);
+  [ue9_to_rc1] (rc1_serving < rc1_capacity) & rc1_on -> default_rate: (rc1_serving' = rc1_serving + 1);
+
+  // switch on is on demand
+  [ue1_on_rc1] (rc1_serving = 0) & (rc1_on = false) -> default_rate: (rc1_on' = true) & (rc1_serving' = rc1_serving + 1);
+  [ue2_on_rc1] (rc1_serving = 0) & (rc1_on = false) -> default_rate: (rc1_on' = true) & (rc1_serving' = rc1_serving + 1);
+  [ue3_on_rc1] (rc1_serving = 0) & (rc1_on = false) -> default_rate: (rc1_on' = true) & (rc1_serving' = rc1_serving + 1);
+  [ue4_on_rc1] (rc1_serving = 0) & (rc1_on = false) -> default_rate: (rc1_on' = true) & (rc1_serving' = rc1_serving + 1);
+  [ue5_on_rc1] (rc1_serving = 0) & (rc1_on = false) -> default_rate: (rc1_on' = true) & (rc1_serving' = rc1_serving + 1);
+  [ue6_on_rc1] (rc1_serving = 0) & (rc1_on = false) -> default_rate: (rc1_on' = true) & (rc1_serving' = rc1_serving + 1);
+  [ue7_on_rc1] (rc1_serving = 0) & (rc1_on = false) -> default_rate: (rc1_on' = true) & (rc1_serving' = rc1_serving + 1);
+  [ue8_on_rc1] (rc1_serving = 0) & (rc1_on = false) -> default_rate: (rc1_on' = true) & (rc1_serving' = rc1_serving + 1);
+  [ue9_on_rc1] (rc1_serving = 0) & (rc1_on = false) -> default_rate: (rc1_on' = true) & (rc1_serving' = rc1_serving + 1);
+
+  // A ue is leaving from this rc1
+  [ue1_from_rc1] (rc1_serving > 0) & rc1_on -> default_rate: (rc1_serving' = rc1_serving - 1);
+  [ue2_from_rc1] (rc1_serving > 0) & rc1_on -> default_rate: (rc1_serving' = rc1_serving - 1);
+  [ue3_from_rc1] (rc1_serving > 0) & rc1_on -> default_rate: (rc1_serving' = rc1_serving - 1);
+  [ue4_from_rc1] (rc1_serving > 0) & rc1_on -> default_rate: (rc1_serving' = rc1_serving - 1);
+  [ue5_from_rc1] (rc1_serving > 0) & rc1_on -> default_rate: (rc1_serving' = rc1_serving - 1);
+  [ue6_from_rc1] (rc1_serving > 0) & rc1_on -> default_rate: (rc1_serving' = rc1_serving - 1);
+  [ue7_from_rc1] (rc1_serving > 0) & rc1_on -> default_rate: (rc1_serving' = rc1_serving - 1);
+  [ue8_from_rc1] (rc1_serving > 0) & rc1_on -> default_rate: (rc1_serving' = rc1_serving - 1);
+  [ue9_from_rc1] (rc1_serving > 0) & rc1_on -> default_rate: (rc1_serving' = rc1_serving - 1);
+endmodule
+
+module rc2 = rc1 [ rc1_on = rc2_on, 
+    rc1_serving = rc2_serving, 
+    ue1_to_rc1  = ue1_to_rc2, 
+    ue2_to_rc1  = ue2_to_rc2,
+    ue3_to_rc1  = ue3_to_rc2,
+    ue4_to_rc1  = ue4_to_rc2,
+    ue5_to_rc1  = ue5_to_rc2,
+    ue6_to_rc1  = ue6_to_rc2,
+    ue7_to_rc1  = ue7_to_rc2,
+    ue8_to_rc1  = ue8_to_rc2,
+    ue9_to_rc1  = ue9_to_rc2,
+    ue1_on_rc1  = ue1_on_rc2, 
+    ue2_on_rc1  = ue2_on_rc2,
+    ue3_on_rc1  = ue3_on_rc2,
+    ue4_on_rc1  = ue4_on_rc2,
+    ue5_on_rc1  = ue5_on_rc2,
+    ue6_on_rc1  = ue6_on_rc2,
+    ue7_on_rc1  = ue7_on_rc2,
+    ue8_on_rc1  = ue8_on_rc2,
+    ue9_on_rc1  = ue9_on_rc2,
+    ue1_from_rc1  = ue1_from_rc2, 
+    ue2_from_rc1  = ue2_from_rc2, 
+    ue3_from_rc1  = ue3_from_rc2, 
+    ue4_from_rc1  = ue4_from_rc2, 
+    ue5_from_rc1  = ue5_from_rc2, 
+    ue6_from_rc1  = ue6_from_rc2, 
+    ue7_from_rc1  = ue7_from_rc2, 
+    ue8_from_rc1  = ue8_from_rc2, 
+    ue9_from_rc1  = ue9_from_rc2, 
+    rc1_off = rc2_off
+] endmodule 
+
+module rc3 = rc1 [ rc1_on = rc3_on, 
+    rc1_serving = rc3_serving, 
+    ue1_to_rc1  = ue1_to_rc3, 
+    ue2_to_rc1  = ue2_to_rc3,
+    ue3_to_rc1  = ue3_to_rc3,
+    ue4_to_rc1  = ue4_to_rc3,
+    ue5_to_rc1  = ue5_to_rc3,
+    ue6_to_rc1  = ue6_to_rc3,
+    ue7_to_rc1  = ue7_to_rc3,
+    ue8_to_rc1  = ue8_to_rc3,
+    ue9_to_rc1  = ue9_to_rc3,
+    ue1_on_rc1  = ue1_on_rc3, 
+    ue2_on_rc1  = ue2_on_rc3,
+    ue3_on_rc1  = ue3_on_rc3,
+    ue4_on_rc1  = ue4_on_rc3,
+    ue5_on_rc1  = ue5_on_rc3,
+    ue6_on_rc1  = ue6_on_rc3,
+    ue7_on_rc1  = ue7_on_rc3,
+    ue8_on_rc1  = ue8_on_rc3,
+    ue9_on_rc1  = ue9_on_rc3,
+    ue1_from_rc1  = ue1_from_rc3, 
+    ue2_from_rc1  = ue2_from_rc3, 
+    ue3_from_rc1  = ue3_from_rc3, 
+    ue4_from_rc1  = ue4_from_rc3, 
+    ue5_from_rc1  = ue5_from_rc3, 
+    ue6_from_rc1  = ue6_from_rc3, 
+    ue7_from_rc1  = ue7_from_rc3, 
+    ue8_from_rc1  = ue8_from_rc3, 
+    ue9_from_rc1  = ue9_from_rc3, 
+    rc1_off = rc3_off
+] endmodule 
+
+rewards "standby"
+  !rc1_on : power_consumption_rc_off;
+  !rc2_on : power_consumption_rc_off;
+  !rc3_on : power_consumption_rc_off;
+endrewards
+
+rewards "operating"
+  rc1_on : power_consumption_rc_on;
+  rc2_on : power_consumption_rc_on;
+  rc3_on : power_consumption_rc_on;
+endrewards
+
